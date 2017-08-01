@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Introduction to AngularJS</title>
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/gofore.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+        document.write('<link rel="stylesheet" href="css/print/' + ( window.location.search.match(/print-pdf/gi) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">');
+    </script>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+
+        <!-- Module 2 -->
+        <section>
+            <h1>Module 2</h1>
+            <h2>Async and network programming</h2>
+        </section>
+
+        <section>
+            <section>
+                <h2>Asynchronous programming</h2>
+            </section>
+            <section>
+                <h2>Blocking vs. non-blocking execution</h2>
+                <ul>
+                    <li>JavaScript is single-threaded</li>
+                    <li>Prefer non-blocking scripts to avoid blocking UI</li>
+                    <li>Most of the blocking is avoided by using asynchronous I/O</li>
+                    <li>Other sources of blocking: timers, user input, long running scripts / CPU intensive computations</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Callbacks</h2>
+                <ul>
+                    <li>Instead of waiting for event, register a callback</li>
+                    <li>Control is passed back to running program</li>
+                    <li>Apply callback function when event is invoked</li>
+                    <li>Applicable for timers, user input, waiting for I/O</li>
+                </ul>
+            </section>
+            <section>
+                <h2><a href="http://jsfiddle.net/jsalonen/5tochfkL/">Simple callback</a></h2>
+<pre><code>
+&lt;button ng-click="loadData()">Load data&lt;/button>
+</code></pre>
+<pre><code>
+$scope.loadData = function() {
+  $scope.data = new Date();
+};</code></pre>
+                <ul>
+                    <li>Anonymous function is assigned to <b>loadData</b></li>
+                    <li><b>ng-click</b> directive registers <b>loadData</b> call as <code>onclick</code> DOM event listener</li>
+                    <li>Executed every time event is triggered</li>
+                </ul>
+            </section>
+            <section>
+                <h2><a href="http://jsfiddle.net/jsalonen/8hdzy5qn/">Callback inside callback</a></h2>
+<pre><code>var started = new Date();  
+  $scope.loadData = function() {
+    $scope.data = '(Loading...)';
+    $timeout(function() {
+      $scope.data = Math.round((new Date() - started) / 1000);
+    }, 1000);
+  };</code></pre>
+                <ul>
+                    <li><b>$timeout</b> is also asynchronous - register callback inside callback</li>
+                    <li>Note how variables from outer functions <b>are visible inside nested functions</b></li>
+                </ul>
+            </section>
+            <section>
+                <h2><a href="http://jsfiddle.net/jsalonen/8hdzy5qn/">Creating a callback</a></h2>
+<pre><code>var started = new Date();  
+    var dataLoader = function(callback) {
+      $scope.data = '(Loading...)';
+      $timeout(function() {
+        $scope.data = Math.round((new Date() - started) / 1000)
+        callback();
+      }, 1000);
+    };
+      
+    $scope.loadData = dataLoader;
+    dataLoader(function() {
+      alert('initial data loaded');
+    });</code></pre>
+                <ul>
+                    <li>Bind dataLoader callbacks into separate variable</li>
+                    <li>On click, simply call it</li>
+                    <li>After loading, call once and execute custom code after it in a callback</li>
+                </ul>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2>Network programming</h2>
+            </section>
+            <section>
+                <h2>Network I/O</h2>
+                <ul>
+                    <li>Common source of async execution</li>
+                    <li>Most commonly AJAX calls via HTTP</li>
+                    <li>Streaming connections via <a href="https://github.com/wilk/ng-websocket">Websockets</a> or even <a href="http://blog.mgechev.com/2014/12/26/multi-user-video-conference-webrtc-angularjs-yeoman/">WebRTC</a>!</li>
+                    <li>We will focus on HTTP here - just note its not the only option</li>
+                </ul>
+            </section>
+            <section>                
+                <h2>AJAX/HTTP in Angular</h2>
+                <ul>
+                    <li>Low-level method: <b>XMLHttpRequest</b> (&rarr; cross-browser issues)</li>
+                    <li>Third-party libraries like jQuery work</li>
+                    <li>...BUT</li>
+                    <li><b>We strongly recommend using Angular's own libraries</b></li>
+                </ul>
+            </section>
+            <section>
+                <h2><a href="https://docs.angularjs.org/api/ng/service/$http">$http</a></h2>
+                <ul>
+                    <li>Angular service for making HTTP requests</li>
+                    <li>High-level Angular service for making HTTP requests</li>
+                    <li>Very similar to jQuery's ajax methods so it will be familiar</li> 
+                    <li>Full HTTP method support (GET, HEAD, POST, PUT, DELETE, PATCH)</li>
+                    <li><a href="https://docs.angularjs.org/api/ng/service/$http#jsonp">Supports JSONP</a> for making cross-domain requests when CORS is not applicable</li>
+                </ul>
+            </section>
+            <section>
+                <h2><a href="http://jsfiddle.net/jsalonen/y49fq3f6/">Callbacks with $http</a></h2>
+<pre><code>$http
+  .post('/echo/json/', data)
+  .success(function(data, status, headers, config) {
+    $scope.data = data.msg + ' ' + (new Date(data.when) - started);
+  })
+  .error(function(data, status, headers, config) {
+    $scope.data = 'ERROR ' + status;
+  });</code></pre>
+<p></p>
+            </section>
+            <section>
+                <h2><a href="https://docs.angularjs.org/api/ng/service/$http#setting-http-headers">Using HTTP Headers</a></h2>
+                <p>Some defaults are provided:</p>
+                <ul>
+                    <li><b>Accept</b> - defaults to <code>application/json, text/plain, * / *</code></li>
+                    <li><b>Content-Type</b> - defaults to <code>application/json</code> (in POST and PUT)</li>
+                    <li>Modify <b>$httpProvider.defaults.headers.*</b> to change defaults</li>
+                </ul>                  
+            </section>
+            <section> 
+                <h2>Custom request headers</h2>
+                <p>Override/set new headers per request with configuration object:</p>
+                <pre><code>
+var myheaders = {
+  'Accept': 'application/json',
+  'Authorization': 'Bearer 12fa-1238-be8a-f54a'   
+};
+
+$http
+  .post('/echo/json/', data, {headers: myheaders})
+</code></pre>          
+            </section>
+            <section>
+                <h2><a href="https://docs.angularjs.org/api/ng/service/$http#transforming-requests-and-responses#">Request / Response transformations and Interceptors</a></h2>
+                <ul>
+                    <li>Built-in JSON serialization/deserilization</li>
+                    <li>Provide your own <b>transformationResponse</b> / <b>transformationRequest</b> to customize</li>
+                    <li>Write interceptors to provide global error handling, authentication/authorization</li>
+                </ul>
+            </section>
+        </section>
+    </div>
+</div>
+
+        <!-- Any section element inside of this container is displayed as a slide -->
+    </div>
+</div>
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.min.js"></script>
+<script>
+    // Full list of configuration options available here:
+    // https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+            {
+                src: 'lib/js/classList.js', condition: function () {
+                return !document.body.classList;
+            }
+            },
+            {
+                src: 'plugin/markdown/marked.js', condition: function () {
+                return !!document.querySelector('[data-markdown]');
+            }
+            },
+            {
+                src: 'plugin/markdown/markdown.js', condition: function () {
+                return !!document.querySelector('[data-markdown]');
+            }
+            },
+            {
+                src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+                hljs.initHighlightingOnLoad();
+            }
+            },
+            {
+                src: 'plugin/zoom-js/zoom.js', async: true, condition: function () {
+                return !!document.body.classList;
+            }
+            },
+            {
+                src: 'plugin/notes/notes.js', async: true, condition: function () {
+                return !!document.body.classList;
+            }
+            }
+            // { src: 'plugin/leap/leap.js', async: true }
+            // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+            // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+    });
+</script>
+</body>
+</html>
+
+
+

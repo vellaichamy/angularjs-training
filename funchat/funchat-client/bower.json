@@ -1,0 +1,15 @@
+{
+  "name": "angular-mini-seed",
+  "description": "Bare bones angular seed for trainings",
+  "version": "0.0.0",
+  "homepage": "https://github.com/gofore/angular-mini-seed",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.4.0",
+    "angular-resource": "~1.4.7"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.4.3"
+  }
+}

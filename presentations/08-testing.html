@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Introduction to AngularJS</title>
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/gofore.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+        document.write('<link rel="stylesheet" href="css/print/' + ( window.location.search.match(/print-pdf/gi) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">');
+    </script>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+
+        <section>
+            <h2>Testing AngularJS applications</h2>
+        </section>
+
+        <section>
+
+            <section>
+                <h2>Why make automated tests for JavaScript UI?</h2>
+            </section>
+            <section>
+                <ul>
+                    <li>Modern SPA's are complex applications. Lot's of code is written in UI. Many applications nowadays have as much (or more) code in the UI than backend. Less manual testing is required when automated test coverage is good.</li>
+                    <li>Javascript is not a compiled language. Dynamic typing introduces bugs easily at runtime.</li>
+                    <li>AngularJs is designed to be easily testable</li>
+                    <ul>
+                        <li>DOM manipulation is separated from the controllers</li>
+                        <li>Dependency injection allows developer to isolate code logic to easily testable units</li>
+                        <li>Dependency injection allows mocking of external dependencies</li>
+                    </ul>
+                </ul>
+            </section>
+            <section>
+                <h3>High quality code always includes automated tests!</h3>
+                <ul>
+                    <li>Less errors for the end user</li>
+                    <li>Less manual regression testing</li>
+                    <li>Makes developers happy and secure when refactoring or making changes to existing code.</li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>How much automated tests?</h2>
+            </section>
+            <section>
+                <ul>
+                    <li><b>Test coverage should be practical</b></li>
+                    <ul>
+                        <li>100% coverage is not usually needed</li>
+                        <li>No point to test for self-evident</li>
+                    </ul>
+                    <li>Tests should cover core functionality and complex UI logic</li>
+                    <li>If bug is discovered, a test should be written to prevent the same code from breaking again</li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>AngularJS test methods</h2>
+            </section>
+            <section>
+                <h2>Unit tests</h2>
+                <ul>
+                    <li>Test a single unit of code</li>
+                    <li>Controllers, services, filters, directives</li>
+                    <li>Mocks for injected external dependencies</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Moving logic from controllers to services, directives and filters is good practice and it makes unit testing simpler.</h3>
+            </section>
+            <section>
+                <h3>Unit tests should focus mainly on more complex logic units. Testing every view controller may not be very beneficial.</h3>
+            </section>
+            <section>
+                <h2>End to end tests</h2>
+                <ul>
+                    <li>Test the whole application stack</li>
+                    <li>E2E testing framework emulates user actions through browser</li>
+                    <li>Framework fills forms, clicks buttons etc and verifies that UI reacts correctly</li>
+                    <li>Some sort of data resetting before each test run must usually be implemented</li>
+                </ul>
+            </section>
+            <section>
+                <h3>End to end tests are the most important form of testing any web application!</h3>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Unit tests in more detail</h2>
+            </section>
+            <section>
+                <h3>How to setup unit testing in AngularJS</h3>
+                <ul>
+                    <li>Unit tests are run with a Node.js app Karma</li>
+                    <li>Tests can be written with almost any JS testing library. Jasmine, Mocha and QUnit are supported out of the box by Karma.</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Structure of Jasmine tests:</h3>
+                <ul>
+                    <li>Test is wrapped inside a <b>describe</b> function</li>
+                    <li>Actual tests are inside <b>it</b> function</li>
+                </ul>
+                <pre><code>describe('componentName or behaviour', function() {
+    it('Is expected to do something in some scenario', function(){
+        expect(someValue).toEqual(someValue);
+    });
+});</code></pre>
+            </section>
+            <section>
+                <pre><code>describe('componentName', function() {
+
+    var injectedComponent;
+
+    beforeEach(function(){
+        //Do something before each test
+    });
+
+    //Any module dependencies are specified by calling module function on them
+    beforeEach(module('requiredModule'));
+
+    //If Angular core service or your custom services are needed they can be injected here
+    //Note the _name_ feature of the injector
+    beforeEach(inject(_injectedComponent_) {
+        injectedComponent = _injectedComponent_;
+    })
+    //Each test is wrapped in it function
+    it('Expected behaviour', function(){
+        //Multiple expectations can be verified inside it function
+        expect(injectedComponent.methodThatReturnsBoolean()).toBe(true);
+    })
+    //Individual tests can also inject components if needed
+    it('Another expected behaviour with some injects', inject(function(injectedComponent2){
+        expect(injectedComponent2.methodThatReturnsBoolean()).toBe(false);
+    }))
+    afterEach(function(){
+        //Do something after each test
+    })
+});</code></pre>
+            </section>
+            <section>
+                <h3>Testing AngularJS components with no dependencies</h3>
+            </section>
+            <section>
+                <p>Let's write a unit test for a filter:</p>
+<pre><code>angular.module('app').filter('userFilter', function($filter) {
+    return function(users, city){
+        return $filter('filter')(users, {city : city});
+    }
+});</code></pre>
+            </section>
+            <section>
+                <p>userFilterTest.js</p>
+                <pre><code>describe('userFilter', function() {
+    var userFilter;
+    var user1 = {name : 'Tapio', city  : 'Tampere'};
+    var user2 = {name : 'Marko', city : 'Tampere'};
+    var user3 = {name : 'Kari', city  : 'Helsinki'};
+    var user4 = {name : 'Kalle', city : 'Turku'};
+    var users = [user1, user2, user3, user4];
+    beforeEach(module('app'));
+    beforeEach(inject(function($filter){
+        userFilter = $filter('userFilter');
+    }));
+    it('Will filter users by city (Tampere)', function() {
+        expect(userFilter(users, 'Tampere')).toEqual([user1, user2]);
+    });
+    it('Will filter users by city (Helsinki)', function() {
+        expect(userFilter(users, 'Helsinki')).toEqual([user3]);
+    });
+    it('Will filter users by city (Turku)', function() {
+        expect(userFilter(users, 'Turku')).toEqual([user4]);
+    });
+});</code></pre>
+
+            </section>
+            <section>
+                <h3>Testing AngularJS controller with mocked depencencies using $httpBackend</h3>
+            </section>
+
+            <section>
+                <p>Let's write a test for a controller:</p>
+                <pre><code>angular.module('app').controller('appController', function($scope, userDetailsResource, userResource) {
+    $scope.userDetails = userDetailsResource.get();
+    $scope.users = userResource.query();
+
+    $scope.selectedUser = null;
+    $scope.selectUser = function(user) {
+        $scope.selectedUser = user;
+    }
+});</code></pre>
+            </section>
+            <section>
+                <p>appControllerTest.js</p>
+                <pre><code>describe('appController', function() {
+    var userDetails = {
+        username : 'perttiesimerkki',
+        firstname : 'Pertti',
+        lastname : 'Esimerkki'
+    };
+
+    var user1 = {name : 'Tapio', city  : 'Tampere'};
+    var user2 = {name : 'Marko', city : 'Tampere'};
+    var user3 = {name : 'Kari', city  : 'Helsinki'};
+    var user4 = {name : 'Kalle', city : 'Turku'};
+
+    var users = [user1, user2, user3, user4];
+
+    beforeEach(module('app'));
+
+    it('Will fetch user details and users list', inject(function($controller, $rootScope, $httpBackend) {
+        var userDetailsUrl = '/api/userdetails';
+        var usersUrl = '/api/users';
+
+        var scope = $rootScope.$new();
+        $httpBackend.expect('GET', userDetailsUrl).respond(userDetails);
+        $httpBackend.expect('GET', usersUrl).respond(users);
+
+        $controller('appController', {$scope : scope});
+
+        scope.selectUser({name: 'Pekka'});
+
+        expect(scope.selectedUser.name).toEqual('Pekka');
+
+        $httpBackend.flush();
+
+        expect(scope.userDetails.username).toEqual(userDetails.username);
+        expect(scope.users.length).toEqual(users.length);
+
+        $httpBackend.verifyNoOutstandingExpectation();
+        $httpBackend.verifyNoOutstandingRequest();
+    }));
+});</code></pre>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>End to end tests in more details</h2>
+            </section>
+            <section>
+                <h3>How to setup end to end testing in AngularJS</h3>
+                <ul>
+                    <li>Recommended way of running e2e tests in AngularJS is by a Node.js program Protractor.</li>
+                    <li>Protractor uses webdriver to control browser. Tests use Jasmine syntax.</li>
+                </ul>
+            </section>
+            <section>
+                <h3>How Protractor tests work</h3>
+                <ul>
+                    <li>Browser is first directed to some url by using browser.get(url)</li>
+                    <li>DOM element finders are created with element() or element.all()</li>
+                    <li>Asynchronous nature of AngularJS app is abstracted away by the element finders.</li>
+                    <li>Element finders allow tests to be written mostly without callbacks or manual async waiting.</li>
+                </ul>
+            </section>
+            <section>
+                <p>Basic structure and elements of Protractor tests</p>
+                <pre><code>describe('Some web ui functionality', function() {
+
+    beforeEach(function(){
+        browser.get('http://appurl');
+    });
+
+    it('Should do something', function() {
+        //Click one DOM element
+        element(by.css('button.somebutton')).click();
+
+        //Input some text
+        element(by.css('input.someinput')).sendKeys('sometext');
+
+        //Input some text. Select by angularjs model.
+        element(by.model('modelName')).sendKeys('sometext');
+
+        //Click first item of a repeater
+        element.all(by.repeater('item in items')).first().click();
+
+        //cssContainingText is one of the most used locators
+        element(by.cssContainingText('.some-class', 'sometext')).click();
+
+        //Example of a case, where callback is needed
+        element(by.css('.some-class')).getText().then(function(text) {
+            //Do something with the text
+        });
+
+        //All kinds of functional operations can be used for element finder arrays. Most commonly used is filter
+        element.all(by.repeater('item in items')).filter(function(element) {
+           //Return boolean to include or exclude item
+        });
+
+        //Multiple expectations per it function can be made
+        expect(element(by.css('.result-text')).getText()).toEqual('sometext');
+
+        //Sometimes it is useful to freeze the test flow for a second and see what's going on.
+        browser.sleep(10000);
+    }
+});</code></pre>
+            </section>
+            <section>
+                <h3>Some pointers about protractor element finding</h3>
+                <ul>
+                    <li>element() is used to create finder for a single element</li>
+                    <li>element.all() is used to create finder for an array of elements</li>
+                    <li>Most commonly used locators: by.css, by.cssContainingText, by.model, by.binding, by.repeater</li>
+                    <li>browser.sleep() can be used to stop the test flow and see whats going on in the browser.</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Some <a href="https://github.com/gofore/angularjs-training/tree/master/examples/demo4/test/e2e">examples</a></h2>
+            </section>
+        </section>
+        <section>
+            <h2>Exercise</h2>
+            <ul>
+                <li>Write end to end tests for the funchat client application.</li>
+            </ul>
+        </section>
+
+        <!-- Any section element inside of this container is displayed as a slide -->
+    </div>
+</div>
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.min.js"></script>
+<script>
+    // Full list of configuration options available here:
+    // https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+            {
+                src: 'lib/js/classList.js', condition: function () {
+                return !document.body.classList;
+            }
+            },
+            {
+                src: 'plugin/markdown/marked.js', condition: function () {
+                return !!document.querySelector('[data-markdown]');
+            }
+            },
+            {
+                src: 'plugin/markdown/markdown.js', condition: function () {
+                return !!document.querySelector('[data-markdown]');
+            }
+            },
+            {
+                src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+                hljs.initHighlightingOnLoad();
+            }
+            },
+            {
+                src: 'plugin/zoom-js/zoom.js', async: true, condition: function () {
+                return !!document.body.classList;
+            }
+            },
+            {
+                src: 'plugin/notes/notes.js', async: true, condition: function () {
+                return !!document.body.classList;
+            }
+            }
+            // { src: 'plugin/leap/leap.js', async: true }
+            // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+            // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+    });
+</script>
+</body>
+</html>
